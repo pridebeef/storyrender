@@ -23,20 +23,21 @@ IMPORT_BLOCK = """
 
 """
 
+# scary quote escapes that map to {` inserted text `} to do inline js template strings
 LINK_BLOCK = """
 <Link 
-    label="{}" 
+    label={{`{}`}}
     bind:state 
-    stateCallback={{(state) => navigate('{}')}} 
+    stateCallback={{(state) => navigate("{}")}} 
 />
 """
 
 TEXT_ENTRY_BLOCK = """
-<TextboxLink label="{}" goal="{}">
+<TextboxLink label={{`{}`}} goal={{`{}`}}>
     <Link 
-        label="{}" 
+        label={{`{}`}}
         bind:state 
-        stateCallback={{(state) => navigate('{}')}} 
+        stateCallback={{(state) => navigate("{}")}} 
     />
 </TextboxLink>
 """
@@ -142,6 +143,6 @@ for file in source_files:
             elif line.strip().startswith('```javascript'):
                 within_codeblock = True;
             else: 
-                transformed += f'{line}\n'
+                transformed += f'{line}'
         with open(f'{target_dir}/{filebase}{append}.svx', 'w') as outfile:
             write(outfile)

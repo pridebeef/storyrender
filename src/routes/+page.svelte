@@ -2,10 +2,11 @@
 	import Button from '$lib/components/Button.svelte';
 	import { DefaultStoryState, type StoryState } from '$lib/state';
 	import { type HistoryAction } from '$lib/history';
-	import { ArrowRight, ArrowLeft, CircleUserRound, RotateCcw, Briefcase } from 'lucide-svelte';
+	import { ArrowRight, ArrowLeft, CircleUserRound, RotateCcw, NotepadText } from 'lucide-svelte';
 	import { onMount, tick } from 'svelte';
 	import { PocketShader } from '@braebo/pocket-shader';
 	import ReaderView from '$lib/components/ReaderView.svelte';
+	import CharacterSheetView from '$lib/components/CharacterSheetView.svelte';
 
 	let storyState = $state(DefaultStoryState);
 	let history = $state([] as HistoryAction[]);
@@ -92,12 +93,26 @@
 			<h2>Interaction Test</h2>
 		</div>
 		<div class="header-right">
-			<Button icon={Briefcase} disabled={!storyState.progression.inventory} />
-			<Button icon={CircleUserRound} disabled={!storyState.progression.characterSheet} />
+			<Button
+				icon={NotepadText}
+				disabled={storyState.ui.view === 'read'}
+				onclick={() => {
+					storyState.ui.view = 'read';
+				}}
+			/>
+			<Button
+				icon={CircleUserRound}
+				disabled={storyState.ui.view === 'characterSheet'}
+				onclick={() => (storyState.ui.view = 'characterSheet')}
+			/>
 		</div>
 	</div>
 	<div class="content">
-		<ReaderView bind:storyState {navigate}></ReaderView>
+		{#if storyState.ui.view === 'read'}
+			<ReaderView bind:storyState {navigate}></ReaderView>
+		{:else if storyState.ui.view === 'characterSheet'}
+			<CharacterSheetView></CharacterSheetView>
+		{/if}
 	</div>
 	<div class="footer"></div>
 </div>

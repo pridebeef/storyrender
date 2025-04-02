@@ -41,11 +41,13 @@
 		padding-right: 1em;
 		display: flex;
 		flex-direction: column;
+
+		max-width: 70ch;
+		width: 100%;
 		:global(p) {
 			line-height: calc(1ex / 0.32);
 			margin: 0 0 calc(1ex / 0.36) 0;
 
-			max-width: 60ch;
 			text-align: justify;
 			/* hyphens: auto; */
 			:global(&:nth-child(1)) {
@@ -56,7 +58,7 @@
 			border-left: 0.25em solid var(--bg-3);
 			padding-left: 2em;
 			margin: 0;
-			max-width: calc(60ch - 2em);
+			max-width: calc(70ch - 2em);
 			:global(p) {
 				margin-top: 0;
 				margin-bottom: 0;

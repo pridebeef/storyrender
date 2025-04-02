@@ -90,7 +90,7 @@
 			<Button icon={RotateCcw} disabled={false} onclick={restart} />
 		</div>
 		<div class="header-center">
-			<h2>Interaction Test</h2>
+			<h2>Tabletop</h2>
 		</div>
 		<div class="header-right">
 			<Button
@@ -111,12 +111,15 @@
 		{#if storyState.ui.view === 'read'}
 			<ReaderView bind:storyState {navigate}></ReaderView>
 		{:else if storyState.ui.view === 'characterSheet'}
-			<CharacterSheetView></CharacterSheetView>
+			<CharacterSheetView bind:character={storyState.character}></CharacterSheetView>
 		{/if}
 	</div>
 	<div class="footer"></div>
 </div>
-<div id="canvas-target" style="opacity: {storyState.ui.background.spiralOpacity};"></div>
+<div
+	id="canvas-target"
+	style="overflow: hide; opacity: {storyState.ui.background.spiralOpacity};"
+></div>
 
 <style>
 	:global(:root) {
@@ -125,11 +128,16 @@
 		--bg-3: hsl(0, 0%, 20%);
 		--bg-4: hsl(0, 0%, 28%);
 		--fg: hsl(0, 0%, 90%);
+		--purple: rgb(144, 62, 174);
 	}
 
 	:global(body, html) {
 		margin: 0;
 		font-size: 16px;
+	}
+
+	:global(*) {
+		box-sizing: border-box;
 	}
 
 	.content {

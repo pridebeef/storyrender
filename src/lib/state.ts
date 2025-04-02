@@ -27,7 +27,7 @@ export type Character = {
         current: number,
         max: number
     }
-    buffs: DebuffType[]
+    buffs: { [key in string]: DebuffType }
     other: { [key in string]: number | string | object }
 }
 
@@ -100,9 +100,7 @@ export const DefaultStoryState: StoryState = {
             max: 27,
             current: 27,
         },
-        buffs: [
-            { ...debuffs.test }
-        ],
+        buffs: {},
         other: {}
     },
     characterFlags: {},

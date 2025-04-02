@@ -77,6 +77,7 @@ for file in source_files:
         if len(lines) < 1:
             print(f'info: empty file {filepath}')
             continue
+            
         # not really a fan of file-by-file state just thrown around 
         # but this is a quick hack anyway
         transformed = '';
@@ -116,6 +117,8 @@ for file in source_files:
                 r'{ state.replace(state, \\`\1\\`, [\\`lowercase\\`]) }', 
                 line
             )
+
+            # pre-parse hook for ignoring internal code to gather (stateful)
             if within_codeblock:
                 # inject lines / reset state on codeblock completion
                 if line.strip().startswith('```'):
@@ -132,28 +135,57 @@ for file in source_files:
                     continue
                 codeblock_contents += line 
                 continue 
+            
+            # command parsing
             if line.strip().startswith('`$') and line.strip().endswith('`'):
                 command = line.strip()[2:-1]
                 print(f'info: command: {command}')
+                
                 # syntax: `$link Story1 this is a link to Story1`
                 # syntax: `$link continue The rest of the story continues under this header.`
+                # syntax: `$link fallthrough continue without making a new page!`
+                # syntax: `$link fallthrough+2 continue without making a new page!`
+                # syntax: `$link continue+2 skip two sections here!`
                 if command.startswith('link'):
                     target, text = command.split(' ', 2)[1:]
-                    if target.strip() == 'fallthrough':
+                    if target.strip().startswith('fallthrough'):
+                        args = target.strip().split('+')
+                        if len(args) > 1:
+                            offset = args[1]
+                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{int(next_subfile) + int(offset)}.svx')
+                            continue
+                        args = target.strip().split('-')
+                        if len(args) > 1:
+                            offset = args[1]
+                            story_index = int(next_subfile) - int(offset)
+                            story_index = str(story_index) if story_index > 0 else ''
+                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{story_index}.svx')
+                            continue
                         transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{next_subfile}.svx')
                         continue
-                    if target.strip() == 'continue':
-                        transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{next_subfile}.svx')
+                    if target.strip().startswith('continue'):
+                        args_p = target.strip().split('+')
+                        if len(args_p) > 1: 
+                            offset = args_p[1]
+                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{int(next_subfile) + int(offset)}.svx')
+                        args_m = target.strip().split('-')
+                        if len(args_m) > 1: 
+                            offset = args_m[1]
+                            story_index = int(next_subfile) - int(offset)
+                            story_index = str(story_index) if story_index > 0 else ''
+                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{story_index}.svx')
+                        if len(args_p) == 1 and len(args_m) == 1:
+                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{next_subfile}.svx')
                         with open(f'{target_dir}/{filebase}{append}.svx', 'w') as outfile:
                             write(outfile)
                             continue
                     transformed += LINK_BLOCK.format(text.strip(), target)
+                
                 # syntax: `$textentry threshold | target | writing goal phrase | link text`
                 # syntax: `$textentry target | writing goal phrase | link text`
                 if command.startswith('textentry'):
                     body = command.split(' ', 1)[1]
                     args = body.split('|')
-                    
                     if len(args) == 3:
                         threshold = None 
                         target, goal, text = args 
@@ -178,6 +210,7 @@ for file in source_files:
                         text.strip(), 
                         target.strip()
                     )
+
                 # syntax: `$debuff base {js object key value pairs}`
                 if command.startswith('debuff'):
                     print(f'info: command: {command}')
@@ -188,6 +221,7 @@ for file in source_files:
                         base,
                         optargs
                     )
+
                 # syntax: `$fixed_roll roll_stat value modifier`
                 if command.startswith('fixed_roll'):
                     print(f'info: command: {command}')

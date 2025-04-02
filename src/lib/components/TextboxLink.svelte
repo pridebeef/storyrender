@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { StoryState } from '$lib/state';
-	import { tick, type Snippet } from 'svelte';
+	import { onMount, tick, type Snippet } from 'svelte';
 	import Link from './Link.svelte';
 
 	let {
-		target,
 		label,
 		goal,
-		linkType = 'page',
 		// guessing at this for "feel"
 		threshold = 3,
 		stateCallback = (_) => {},
@@ -60,15 +58,24 @@
 				document.querySelector('.content')?.scrollBy(0, 200);
 			});
 			if (stateCallback !== undefined && storyState !== undefined) {
-				console.error('shouldn.');
+				console.error("shouldn't be possible. something is very messed up.");
 				stateCallback(storyState);
 			}
 		}
 	});
+
+	const handleEnter = (event: KeyboardEvent) => {
+		if (event.repeat) return;
+		if (event.key === 'Enter') {
+			if (ld(value, goal, threshold)) {
+				(document.querySelector('.fakelink') as any)?.click();
+			}
+		}
+	};
 </script>
 
 <div class="textbox-link">
-	<input bind:value placeholder={label} />
+	<input bind:value placeholder={label} onkeydown={handleEnter} autofocus />
 	{#if ld(value, goal, threshold)}
 		{@render children?.()}
 	{/if}

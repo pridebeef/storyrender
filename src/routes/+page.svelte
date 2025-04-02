@@ -8,7 +8,7 @@
 	import ReaderView from '$lib/components/ReaderView.svelte';
 	import CharacterSheetView from '$lib/components/CharacterSheetView.svelte';
 
-	let storyState = $state(DefaultStoryState);
+	let storyState: StoryState = $state(DefaultStoryState);
 	let history = $state([] as HistoryAction[]);
 	let historyBack = $state(0);
 
@@ -19,7 +19,7 @@
 		}
 		history.push({
 			type: 'event',
-			state: $state.snapshot(storyState)
+			state: $state.snapshot(storyState) as StoryState
 		});
 		storyState.currentPage = page;
 	};
@@ -34,7 +34,7 @@
 		if (history[history.length - 1].type !== 'marker') {
 			history.push({
 				type: 'marker',
-				state: $state.snapshot(storyState)
+				state: $state.snapshot(storyState) as StoryState
 			});
 		}
 		storyState = history.toReversed()[historyBack].state;
@@ -50,7 +50,7 @@
 		if (window.confirm('Are you sure you want to restart?')) {
 			history = [];
 			historyBack = 0;
-			storyState = $state.snapshot(DefaultStoryState);
+			storyState = $state.snapshot(DefaultStoryState) as StoryState;
 		}
 	};
 

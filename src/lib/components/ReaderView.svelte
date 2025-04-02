@@ -17,20 +17,27 @@
 			? storyState.currentPage
 			: `${storyState.currentPage}.svx`
 	);
+
+	let opacity = $state(1);
 	const Page = $derived((pages?.[pageName] ? pages?.[pageName] : pages?.['Error.svx'])?.default);
 	$effect(() => {
 		Page;
+		opacity = 0;
 		tick().then(() => {
+			opacity = 1;
 			document.querySelector('.content')?.scroll(0, 0);
 		});
 	});
 </script>
 
-<div class="reading-body">
+<div class={{ 'reading-body': true, 'opacity-curve': opacity > 0 }} style="opacity: {opacity};">
 	<Page bind:state={storyState} {navigate} />
 </div>
 
 <style>
+	:global(.opacity-curve) {
+		transition: opacity ease-in 0.15s;
+	}
 	:global(.reading-body) {
 		z-index: 2;
 

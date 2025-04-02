@@ -24,9 +24,9 @@ export type DebuffType = {
 };
 
 export const debuffs: { [key in string]: DebuffType } = {
-    test: {
+    hypnotized: {
         name: "Hypnotized",
-        duration: "4 hours",
+        duration: "3 hours",
         color: "#ff00ff",
         icon: Shell,
         description: "Treat statements from the target as if they were true."

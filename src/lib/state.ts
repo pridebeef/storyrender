@@ -1,4 +1,4 @@
-import { debuffs, type DebuffType } from "./shared";
+import { debuffs, type DebuffType, type ItemType } from "./shared";
 
 export type InterfaceView = 'read' | 'inventory' | 'characterSheet';
 
@@ -18,30 +18,29 @@ const DefaultInterfaceState: InterfaceState = {
     }
 };
 
+export type EditableField = "willpower" | "class"
+
 export type Character = {
     name: string,
     pronouns: 'he' | 'she' | 'they',
-    stats: { [key in string]: number },
+    stats: { [key in string]: number }
     class: { name: string, level: number }[]
     health: {
         current: number,
         max: number
     }
+    // these should be lists but onMount rerender adds the item/buff again.
+    // tomorrow's problem!
     buffs: { [key in string]: DebuffType }
     other: { [key in string]: number | string | object }
+    unlockEditable: { [key in EditableField]?: boolean }
+    inventory: { [key in string]: ItemType }
 }
 
 export type ReplaceFlags = "lowercase" | "capitalize" | "uppercase"
 
 export type StoryState = {
-    progression: {
-        characterSheet: boolean,
-        inventory: boolean
-    },
     character: Character,
-    characterFlags: {
-        [key in string]: number | string | object
-    },
     currentPage: string,
     ui: InterfaceState,
     dictionary: { [key in string]: object | string }
@@ -75,10 +74,6 @@ const DefaultDictionary = {
 }
 
 export const DefaultStoryState: StoryState = {
-    progression: {
-        characterSheet: false,
-        inventory: false,
-    },
     character: {
         name: 'myname',
         pronouns: 'he',
@@ -101,9 +96,10 @@ export const DefaultStoryState: StoryState = {
             current: 27,
         },
         buffs: {},
-        other: {}
+        other: {},
+        unlockEditable: {},
+        inventory: {}
     },
-    characterFlags: {},
     currentPage: "Entrypoint",
     ui: { ...DefaultInterfaceState },
     dictionary: { ...DefaultDictionary },

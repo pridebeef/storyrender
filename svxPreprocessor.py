@@ -21,8 +21,9 @@ IMPORT_BLOCK = """
     import TextboxLink from '../components/TextboxLink.svelte';
     import Link from '../components/Link.svelte';
     import Debuff from '../components/Debuff.svelte';
+    import Item from '../components/Item.svelte';
     import Roll from '../components/Roll.svelte';
-    import { debuffs, roll } from '../shared.ts';
+    import { debuffs, items, roll } from '../shared.ts';
     let { state = $bindable(), navigate } = $props();
 </script>
 
@@ -55,6 +56,12 @@ DEBUFF_BLOCK = """
 />
 """
 
+ITEM_BLOCK = """
+<Item
+    item={{ {{ ...items.{}{} }} }}
+/>
+"""
+
 # not-actually-random at all
 FIXED_ROLL_BLOCK = """
 <Roll 
@@ -71,7 +78,7 @@ if len(os.listdir(target_dir)) != 0:
 
 for file in source_files:
     filepath = f"{sys.argv[1]}/{file}"
-    filebase = '.'.join(file.split('.')[:-1])
+    filebase = '.'.join(file.split('.')[:-1]).split(' ')[-1]
     with open(filepath, 'r') as source:
         lines = source.readlines()
         if len(lines) < 1:
@@ -132,6 +139,7 @@ for file in source_files:
                     close_idx = transformed_lines_stripped.index(close_tag)
                     transformed_lines[close_idx:close_idx] = ['// begin inject'] + codeblock_contents.split('\n') + ['// end inject']
                     transformed = '\n'.join(transformed_lines)
+                    codeblock_contents = ''
                     continue
                 codeblock_contents += line 
                 continue 
@@ -141,6 +149,12 @@ for file in source_files:
                 command = line.strip()[2:-1]
                 print(f'info: command: {command}')
                 
+                # syntax: `$continue` - flush to next file
+                if command.startswith('continue'):
+                    with open(f'{target_dir}/{filebase}{append}.svx', 'w') as outfile:
+                        write(outfile)
+                        continue
+
                 # syntax: `$link Story1 this is a link to Story1`
                 # syntax: `$link continue The rest of the story continues under this header.`
                 # syntax: `$link fallthrough continue without making a new page!`
@@ -213,7 +227,6 @@ for file in source_files:
 
                 # syntax: `$debuff base {js object key value pairs}`
                 if command.startswith('debuff'):
-                    print(f'info: command: {command}')
                     base = command.split(' ')[1].strip()
                     optargs = command.split(' ', 2)[1:]
                     optargs = f", {optargs[1]}" if len(optargs) != 1 else ''
@@ -222,9 +235,18 @@ for file in source_files:
                         optargs
                     )
 
+                # syntax: `$item base {js object key value pairs}`
+                if command.startswith('item'):
+                    base = command.split(' ')[1].strip()
+                    optargs = command.split(' ', 2)[1:]
+                    optargs = f", {optargs[1]}" if len(optargs) != 1 else ''
+                    transformed += ITEM_BLOCK.format(
+                        base,
+                        optargs
+                    )
+
                 # syntax: `$fixed_roll roll_stat value modifier`
                 if command.startswith('fixed_roll'):
-                    print(f'info: command: {command}')
                     roll, value, modifier = [part.strip() for part in command.split(' ', 4)[1:]]
                     transformed += FIXED_ROLL_BLOCK.format(roll, value, modifier)
 

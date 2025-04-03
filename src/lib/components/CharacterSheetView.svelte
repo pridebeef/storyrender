@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { Character } from '$lib/state';
+	import type { Character, EditableField } from '$lib/state';
 	import { Heart } from 'lucide-svelte';
 	import Debuff from './Debuff.svelte';
+	import Item from './Item.svelte';
 
-	const { character = $bindable() as Character } = $props();
+	let { character = $bindable() as Character } = $props();
 </script>
 
 <div class="sheet-view">
@@ -27,9 +28,13 @@
 					<span class="sheet-label">
 						{name}
 					</span>
-					<span class="sheet-stat-value">
-						{value}
-					</span>
+					{#if character.unlockEditable?.[name as EditableField]}
+						<input bind:value={character.stats[name]} class="sheet-stat-value" />
+					{:else}
+						<span class="sheet-stat-value">
+							{value}
+						</span>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -44,12 +49,25 @@
 			</div>
 		</div>
 		<div class="sheet-horiz"></div>
+		<span class="subheader">Status</span>
 		<div class="sheet-debuffs">
-			{#each character.buffs as buff}
-				<Debuff debuff={buff}></Debuff>
+			{#each Object.entries(character.buffs) as [name, value]}
+				<Debuff debuff={value}></Debuff>
 			{/each}
+			{#if Object.keys(character.buffs).length === 0}
+				<span>Everything's perfectly normal.</span>
+			{/if}
 		</div>
-		<div class="sheet-inventory"></div>
+		<div class="sheet-horiz"></div>
+		<span class="subheader">Inventory</span>
+		<div class="sheet-inventory">
+			{#each Object.entries(character.inventory) as [name, value]}
+				<Item item={value}></Item>
+			{/each}
+			{#if Object.keys(character.buffs).length === 0}
+				<span>Emptyhanded, except for your usual gear.</span>
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -72,6 +90,12 @@
 		> span {
 			margin: auto 0;
 		}
+	}
+
+	.subheader {
+		text-transform: uppercase;
+		font-weight: 500;
+		margin-bottom: 1.5rem;
 	}
 
 	.sheet-view {

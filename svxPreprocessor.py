@@ -25,6 +25,7 @@ IMPORT_BLOCK = """
     import Roll from '../components/Roll.svelte';
     import { debuffs, items, roll } from '../shared.ts';
     let { state = $bindable(), navigate } = $props();
+    const playOneshot = (s) => state.ui.audio.play_oneshot(state.ui.audio.muted, state.ui.audio.oneshots, s);
 </script>
 
 """
@@ -249,6 +250,17 @@ for file in source_files:
                 if command.startswith('fixed_roll'):
                     roll, value, modifier = [part.strip() for part in command.split(' ', 4)[1:]]
                     transformed += FIXED_ROLL_BLOCK.format(roll, value, modifier)
+
+                if command.startswith('snap'):
+                    transformed_lines = transformed.split('\n')
+                    transformed_lines_stripped = list([l.strip() for l in transformed_lines])
+                    close_tag = '</script>'
+                    if close_tag not in transformed_lines_stripped:
+                        print("error: no close script in processed lines. this shouldn't happen.")
+                        sys.exit(1)
+                    close_idx = transformed_lines_stripped.index(close_tag)
+                    transformed_lines[close_idx:close_idx] = ['// begin inject'] + ["playOneshot('snap')"] + ['// end inject']
+                    transformed = '\n'.join(transformed_lines)
 
             # syntax: ```javascript {arbitrary content/newlines} ```
             # md codeblock for js dumped into import block header 

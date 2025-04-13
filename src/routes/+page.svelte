@@ -2,15 +2,26 @@
 	import Button from '$lib/components/Button.svelte';
 	import { DefaultStoryState, type StoryState } from '$lib/state';
 	import { type HistoryAction } from '$lib/history';
-	import { ArrowRight, ArrowLeft, CircleUserRound, RotateCcw, NotepadText } from 'lucide-svelte';
+	import {
+		ArrowRight,
+		ArrowLeft,
+		CircleUserRound,
+		RotateCcw,
+		NotepadText,
+		Volume2,
+		VolumeOff
+	} from 'lucide-svelte';
 	import { onMount, tick } from 'svelte';
 	import { PocketShader } from '@braebo/pocket-shader';
 	import ReaderView from '$lib/components/ReaderView.svelte';
 	import CharacterSheetView from '$lib/components/CharacterSheetView.svelte';
 
 	let storyState: StoryState = $state(DefaultStoryState);
+
 	let history = $state([] as HistoryAction[]);
 	let historyBack = $state(0);
+
+	let shaderRendered = $state(false);
 
 	const navigate = (page: string) => {
 		if (historyBack > 0) {
@@ -26,8 +37,6 @@
 
 	const enableBack = $derived(history.filter((e) => e.type !== 'marker').length > historyBack);
 	const enableForward = $derived(historyBack > 0);
-
-	$inspect(history, historyBack);
 
 	const back = () => {
 		historyBack += 1;
@@ -54,9 +63,14 @@
 		}
 	};
 
-	onMount(() => {
-		new PocketShader('#canvas-target', {
-			fragment: `
+	$effect(() => {
+		if (Object.keys(storyState.ui.audio.oneshots).length <= 0) {
+			storyState.ui.audio.register_oneshot(storyState.ui.audio.oneshots, 'snap', 'snap.mp3');
+		}
+		if (storyState.ui.background.spiralOpacity > 0 && !shaderRendered) {
+			shaderRendered = true;
+			new PocketShader('#canvas-target', {
+				fragment: `
 				uniform float u_time;
 				uniform vec2 u_resolution;
 				const float pi = 3.141592654;
@@ -77,17 +91,39 @@
 					color = vec4(a * cos(b * theta + c * pi * (b * r - d * u_time)));
 				}
 			`,
-			autoStart: true
-		});
+				autoStart: true
+			});
+		}
+
+		if (storyState.ui.background.spiralOpacity <= 0) {
+			shaderRendered = false;
+			setTimeout(() => document.querySelector('#canvas-target > canvas')?.remove(), 2000);
+		}
 	});
 </script>
 
-<div class="main-page">
+<div
+	class="main-page"
+	style="background-color: var(--{storyState.ui.theme === 'in-story'
+		? 'bg'
+		: storyState.ui.theme === 'awake'
+			? 'bg-alt'
+			: storyState.ui.theme === 'awake-spiral'
+				? 'bg'
+				: 'bg'})"
+>
 	<div class="header">
 		<div class="header-left">
 			<Button icon={ArrowLeft} disabled={!enableBack} onclick={back} />
 			<Button icon={ArrowRight} disabled={!enableForward} onclick={forward} />
 			<Button icon={RotateCcw} disabled={false} onclick={restart} />
+			<Button
+				icon={storyState.ui.audio.muted ? VolumeOff : Volume2}
+				onclick={() => {
+					storyState.ui.audio.muted = !storyState.ui.audio.muted;
+				}}
+				color={storyState.ui.audio.muted ? '#999999' : undefined}
+			/>
 		</div>
 		<div class="header-center">
 			<h2>Tabletop</h2>
@@ -123,8 +159,10 @@
 
 <style>
 	:global(:root) {
+		--black: hsl(0, 0%, 0%);
 		--bg: hsl(0, 0%, 11%);
 		--bg-1: hsl(0, 0%, 13%);
+		--bg-alt: hsl(0, 0%, 15%);
 		--bg-3: hsl(0, 0%, 20%);
 		--bg-4: hsl(0, 0%, 28%);
 		--fg: hsl(0, 0%, 90%);
@@ -140,6 +178,16 @@
 		box-sizing: border-box;
 	}
 
+	:global(hr) {
+		width: 60%;
+		margin-top: 1rem;
+		margin-bottom: 3rem;
+	}
+
+	:global(code, pre) {
+		overflow: auto;
+	}
+
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -153,7 +201,7 @@
 		color: var(--fg);
 		display: flex;
 		flex-direction: column;
-
+		transition: background-color 0.5s ease-in;
 		z-index: 0;
 	}
 

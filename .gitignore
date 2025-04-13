@@ -26,3 +26,5 @@ vite.config.ts.timestamp-*
 # not strictly necessary.
 src/lib/story/*
 src/lib/story*
+
+*.mp3

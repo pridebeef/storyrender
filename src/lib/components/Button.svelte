@@ -4,6 +4,7 @@
 		icon = undefined,
 		label = '',
 		tooltip = '',
+		color = undefined,
 		disabled = false
 	} = $props();
 	const iconOnly = $derived(label === '' && icon !== undefined);
@@ -18,6 +19,7 @@
 	}}
 	onclick={disabled ? () => {} : onclick}
 	aria-label="label"
+	style="color: {color ? color : 'unset'}"
 >
 	{#if icon !== undefined}
 		{@const Icon = icon}

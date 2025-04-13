@@ -1,21 +1,54 @@
 import { debuffs, type DebuffType, type ItemType } from "./shared";
 
+// a lot of this should probably be in the form of 
+// classes rather than types + a default to splat/copy construct
+// in order to be idiomatic but i didn't take the time in my single day of reading svelte 5 docs
+// to realize classes weren't reactive out of the box so i lazily just left this as-is
+
 export type InterfaceView = 'read' | 'inventory' | 'characterSheet';
+
+export type InterfaceTheme = 'in-story' | 'awake' | 'awake-spiral' | 'blurred';
+
+type AudioContainer = { [audioName in string]: HTMLAudioElement };
+
+export type InterfaceAudio = {
+    muted: boolean;
+    tracks: AudioContainer;
+    oneshots: AudioContainer;
+    register_oneshot: (o: AudioContainer, name: string, file: string) => void;
+    play_oneshot: (mute: boolean, o: AudioContainer, name: string) => void;
+}
+
+export const DefaultInterfaceAudio: InterfaceAudio = {
+    muted: false,
+    tracks: {},
+    oneshots: {},
+    register_oneshot(o: { [audioName in string]: HTMLAudioElement }, name: string, file: string) {
+        o[name] = new Audio(file);
+    },
+    play_oneshot(mute: boolean, o: { [audioName in string]: HTMLAudioElement }, name: string) {
+        if (mute) return;
+        o[name].currentTime = 0;
+        o[name].play();
+    }
+}
 
 export type InterfaceState = {
     view: InterfaceView;
-    audioTrack?: undefined;
+    audio: InterfaceAudio;
     background: {
         spiralOpacity: number;
     };
-    theme?: undefined;
+    theme: InterfaceTheme;
 };
 
 const DefaultInterfaceState: InterfaceState = {
     view: 'read',
     background: {
         spiralOpacity: 0.0
-    }
+    },
+    audio: { ...DefaultInterfaceAudio },
+    theme: 'in-story'
 };
 
 export type EditableField = "willpower" | "class"
@@ -64,6 +97,11 @@ const DefaultDictionary = {
             'he': 'his',
             'she': 'her',
             'they': 'their'
+        },
+        'hes': {
+            'he': "he's",
+            'she': "she's",
+            'they': "they're"
         }
     },
     diminutive: {
@@ -75,7 +113,7 @@ const DefaultDictionary = {
 
 export const DefaultStoryState: StoryState = {
     character: {
-        name: 'myname',
+        name: 'name',
         pronouns: 'he',
         stats: {
             'strength': 16,
@@ -113,7 +151,7 @@ export const DefaultStoryState: StoryState = {
         if (target === (state.dictionary.diminutive as any)['he']) {
             replacement = (state.dictionary.diminutive as any)[state.character.pronouns]
         }
-        const pronounTargets = ['he', 'him', 'his'];
+        const pronounTargets = ['he', 'him', 'his', 'hes'];
         if (pronounTargets.includes(target)) {
             replacement = (state.dictionary.pronouns as any)[target][state.character.pronouns]
         }

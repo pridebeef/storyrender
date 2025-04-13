@@ -11,7 +11,7 @@
 	<div class="sheet-wrapper">
 		<div class="sheet-current">
 			<div class="sheet-title">
-				<span class="name">{character.name}</span>
+				<input type="text" bind:value={character.name} class="name" />
 				<span class="divider">|</span>
 				<span class="species">species</span>
 				<span class="divider">|</span>
@@ -29,7 +29,11 @@
 						{name}
 					</span>
 					{#if character.unlockEditable?.[name as EditableField]}
-						<input bind:value={character.stats[name]} class="sheet-stat-value" />
+						<input
+							type="text"
+							bind:value={character.stats[name]}
+							class="sheet-stat-value input-stat-value"
+						/>
 					{:else}
 						<span class="sheet-stat-value">
 							{value}
@@ -72,6 +76,33 @@
 </div>
 
 <style>
+	input[type='text'] {
+		height: 50px;
+		-webkit-appearance: none;
+		appearance: none;
+		margin: 18px 0;
+		width: 200px;
+
+		color: var(--fg);
+		background-color: var(--bg-1);
+
+		border: 1px solid var(--bg-3);
+		outline: none;
+		box-shadow: none;
+		&.input-stat-value {
+			margin: 0px;
+			width: 50px;
+			height: 2rem;
+			border: 1px solid rgb(255, 220, 155);
+			:global(&:hover) {
+				border: 1px solid rgb(255, 235, 200);
+			}
+			:global(&:active) {
+				border: 1px solid rgb(255, 165, 0);
+			}
+		}
+	}
+
 	.sheet-title {
 		text-transform: uppercase;
 		font-weight: 500;
@@ -90,6 +121,7 @@
 		> span {
 			margin: auto 0;
 		}
+		flex-wrap: wrap;
 	}
 
 	.subheader {

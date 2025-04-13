@@ -1,38 +1,62 @@
-# sv
+# storyrender
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+wip twine-like story engine.
 
-## Creating a project
+halfway between something that's fit for only one purpose and generic. i'd love to make this more generic soon.
 
-If you're seeing this, you've probably already done this step. Congrats!
+general workflow: 
 
-```bash
-# create a new project in the current directory
-npx sv create
+each node or page is through ![mdsvex](https://mdsvex.pngwn.io/) and gets thrown in the story directory, included at compile time, and built into something fully static.
 
-# create a new project in my-app
-npx sv create my-app
+a preprocessor turns inline markdown commands into js scripts injected into the finalized mdsvex nodes. ideally this would be a build plugin but i have spent about a week with vite total.
+
+
+```md
+# hi!
+
+markdown headers and formatting work.
+
+*italics*, **bold**, and even inline html for <sub>small text.</sub>
+
+`$link continue Next page.`
+
+This is a new node.
+
+Text goes here.
+
+`$link fallthrough This target goes to the same place...`
+
+`$link continue ...as the one below it.`
+
+Other injected JS can be done in page, too, like setting the background.
+
+hard to nest in documentation: use the below like a 'real' codeblock.
+
+` ` `javascript
+state.ui.background.spiralOpacity = 0.04;
+state.character.stats.willpower = 0;
+state.ui.theme = "awake";
+` ` `
+
+these fire on page load.
+
+`$link continue Next page, and so on.`
 ```
 
-## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+test for building documentation: check `entrypoint.md` in `examples`
 
-```bash
-npm run dev
+`$ ./svxPreprocessory.py ./examples ./src/lib/story && npm run dev`
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+publishing: `$ npm run build`
+
+
 ```
+#!/bin/bash
+cp -r ~/.obsidian/story_folder ./md_temp
+rm ./src/lib/story/*
+./svxPreprocessor.py ./story_folder ./src/lib/story
+rm -r ./md_temp
 
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
+cp ./src/lib/story-wrapper/* ./src/lib/story/
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

@@ -11,14 +11,27 @@
 	<div class="sheet-wrapper">
 		<div class="sheet-current">
 			<div class="sheet-title">
-				<input type="text" bind:value={character.name} class="name" />
-				<span class="divider">|</span>
-				<span class="species">species</span>
-				<span class="divider">|</span>
-				<span class="classes">
-					{#each character.class as { name, level }}
-						<span>{name} ({level})</span>
-					{/each}
+				<span>
+					<span class="sheet-title-header"> Name </span>
+					<span class="sheet-horiz-mini"></span>
+					<input type="text" bind:value={character.name} class="name" />
+				</span>
+				<span class="sheet-vert"></span>
+				<span>
+					<span class="sheet-title-header">Species</span>
+					<span class="sheet-horiz-mini"></span>
+
+					<input type="text" bind:value={character.species} class="name" />
+				</span>
+				<span class="sheet-vert"></span>
+				<span>
+					<span>Classes</span>
+					<span class="sheet-horiz-mini"></span>
+					<span class="classes">
+						{#each character.class as { name, level }}
+							<span>{name} ({level})</span>
+						{/each}
+					</span>
 				</span>
 			</div>
 		</div>
@@ -119,9 +132,26 @@
 			color: hsl(0, 0%, 50%);
 		}
 		> span {
-			margin: auto 0;
+			/*margin: auto 0;*/
+			display: flex;
+			flex-direction: column;
+			gap: 0rem;
+			input {
+				margin-bottom: 0;
+				margin-top: 0;
+			}
 		}
 		flex-wrap: wrap;
+	}
+
+	.classes {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		input {
+			margin-bottom: 0;
+			margin-top: 0;
+		}
 	}
 
 	.subheader {
@@ -179,6 +209,13 @@
 		background-color: var(--bg-1);
 		border-radius: 8px;
 		margin: 1rem 0rem;
+	}
+
+	.sheet-horiz-mini {
+		height: 2px;
+		background-color: var(--bg-1);
+		border-radius: 8px;
+		margin: 0.4rem 0rem;
 	}
 
 	.sheet-health {

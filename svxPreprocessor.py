@@ -7,6 +7,8 @@
 # and creating multiple svelte components out of one file, which seems tricky with the current setup.
 # could be cleaned up, but, it's quick.
 
+# this has gotten really out of hand.
+
 import os, sys, re
 
 nodes = 0
@@ -36,6 +38,7 @@ LINK_BLOCK = """
     label={{`{}`}}
     bind:state 
     stateCallback={{(state) => navigate("{}")}} 
+    {}
 />
 """
 
@@ -45,6 +48,7 @@ TEXT_ENTRY_BLOCK = """
         label={{`{}`}}
         bind:state 
         stateCallback={{(state) => navigate("{}")}} 
+        {}
     />
 </TextboxLink>
 """
@@ -107,6 +111,13 @@ for file in source_files:
         within_codeblock = False 
         codeblock_contents = ''
         for line in lines:
+            # horrid hack for %substitutes in links and js :3
+            # syntax: !%Name -> outputs valid svelte html embed within string
+            line = re.sub(
+                r'!%([A-Z][a-z0-9]+)', 
+                r'${ state.replace(state, `\1`, [`capitalize`]) }', 
+                line
+            )
             # quotes are substituted with the asymmetrical quote characters
             # and since `` is a js template literal AND a markdown codeblock
             # we want the final output to be \`text\` which requires escaping the slash.
@@ -162,43 +173,74 @@ for file in source_files:
                 # syntax: `$link fallthrough+2 continue without making a new page!`
                 # syntax: `$link continue+2 skip two sections here!`
                 if command.startswith('link'):
+                    alt_style = ''
+                    if command.startswith('linkb'):
+                        print('info: setting alternate link style')
+                        alt_style = 'altStyle="b"'
                     target, text = command.split(' ', 2)[1:]
                     if target.strip().startswith('fallthrough'):
                         args = target.strip().split('+')
                         if len(args) > 1:
                             offset = args[1]
-                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{int(next_subfile) + int(offset)}.svx')
+                            transformed += LINK_BLOCK.format(
+                                text.strip(), 
+                                f'{filebase}{int(next_subfile) + int(offset)}.svx',
+                                alt_style
+                            )
                             continue
                         args = target.strip().split('-')
                         if len(args) > 1:
                             offset = args[1]
                             story_index = int(next_subfile) - int(offset)
                             story_index = str(story_index) if story_index > 0 else ''
-                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{story_index}.svx')
+                            transformed += LINK_BLOCK.format(
+                                text.strip(), 
+                                f'{filebase}{story_index}.svx',
+                                alt_style
+                            )
                             continue
-                        transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{next_subfile}.svx')
+                        transformed += LINK_BLOCK.format(
+                            text.strip(), 
+                            f'{filebase}{next_subfile}.svx',
+                            alt_style
+                        )
                         continue
                     if target.strip().startswith('continue'):
                         args_p = target.strip().split('+')
                         if len(args_p) > 1: 
                             offset = args_p[1]
-                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{int(next_subfile) + int(offset)}.svx')
+                            transformed += LINK_BLOCK.format(
+                                text.strip(), 
+                                f'{filebase}{int(next_subfile) + int(offset)}.svx',
+                                alt_style
+                            )
                         args_m = target.strip().split('-')
                         if len(args_m) > 1: 
                             offset = args_m[1]
                             story_index = int(next_subfile) - int(offset)
                             story_index = str(story_index) if story_index > 0 else ''
-                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{story_index}.svx')
+                            transformed += LINK_BLOCK.format(
+                                text.strip(), 
+                                f'{filebase}{story_index}.svx',
+                                alt_style
+                            )
                         if len(args_p) == 1 and len(args_m) == 1:
-                            transformed += LINK_BLOCK.format(text.strip(), f'{filebase}{next_subfile}.svx')
+                            transformed += LINK_BLOCK.format(
+                                text.strip(), 
+                                f'{filebase}{next_subfile}.svx', 
+                                alt_style
+                            )
                         with open(f'{target_dir}/{filebase}{append}.svx', 'w') as outfile:
                             write(outfile)
                             continue
-                    transformed += LINK_BLOCK.format(text.strip(), target)
+                    transformed += LINK_BLOCK.format(text.strip(), target, alt_style)
                 
                 # syntax: `$textentry threshold | target | writing goal phrase | link text`
                 # syntax: `$textentry target | writing goal phrase | link text`
                 if command.startswith('textentry'):
+                    alt_style = ''
+                    if command.startswith('textentryb'):
+                        print('info: setting alternate link style')
                     body = command.split(' ', 1)[1]
                     args = body.split('|')
                     if len(args) == 3:
@@ -214,7 +256,8 @@ for file in source_files:
                             goal.strip(), 
                             goal.strip(), 
                             text.strip(), 
-                            f'{filebase}{next_subfile}.svx'
+                            f'{filebase}{next_subfile}.svx',
+                            alt_style
                         )
                         with open(f'{target_dir}/{filebase}{append}.svx', 'w') as outfile:
                             write(outfile)
@@ -223,7 +266,8 @@ for file in source_files:
                         goal.strip(), 
                         goal.strip(), 
                         text.strip(), 
-                        target.strip()
+                        target.strip(),
+                        alt_style
                     )
 
                 # syntax: `$debuff base {js object key value pairs}`

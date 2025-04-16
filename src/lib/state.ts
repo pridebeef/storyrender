@@ -56,6 +56,7 @@ export type EditableField = "willpower" | "class"
 export type Character = {
     name: string,
     pronouns: 'he' | 'she' | 'they',
+    species: string,
     stats: { [key in string]: number }
     class: { name: string, level: number }[]
     health: {
@@ -113,8 +114,9 @@ const DefaultDictionary = {
 
 export const DefaultStoryState: StoryState = {
     character: {
-        name: 'name',
+        name: 'Name',
         pronouns: 'he',
+        species: 'Dragon',
         stats: {
             'strength': 16,
             'dexterity': 12,
@@ -147,6 +149,9 @@ export const DefaultStoryState: StoryState = {
         let replacement = "";
         if (target === 'name') {
             replacement = state.character.name
+        }
+        if (target === 'species') {
+            replacement = state.character.species
         }
         if (target === (state.dictionary.diminutive as any)['he']) {
             replacement = (state.dictionary.diminutive as any)[state.character.pronouns]

@@ -167,6 +167,12 @@
 		--bg-4: hsl(0, 0%, 28%);
 		--fg: hsl(0, 0%, 90%);
 		--purple: rgb(144, 62, 174);
+		--orange1: rgb(255, 165, 0);
+		--orange2: rgb(255, 220, 155);
+		--orange3: rgb(255, 235, 200);
+		--steel1: rgb(94, 112, 134);
+		--steel2: rgb(140, 163, 184);
+		--steel3: rgb(171, 193, 212);
 	}
 
 	:global(body, html) {

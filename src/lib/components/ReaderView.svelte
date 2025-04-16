@@ -73,17 +73,4 @@
 			margin-bottom: 1em;
 		}
 	}
-
-	:global(span.fakelink) {
-		text-decoration: underline;
-		:global(&:hover) {
-			color: rgb(255, 235, 200);
-			cursor: pointer;
-		}
-		:global(&:active) {
-			color: rgb(255, 165, 0);
-		}
-		color: rgb(255, 220, 155);
-		margin-bottom: calc(1ex / 0.36);
-	}
 </style>
